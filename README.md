@@ -19,27 +19,103 @@
 
 - Java 21+
 - Spring Boot 3.4+
-- Docker & Docker Compose (모니터링 스택 실행 시)
+- Docker & Docker Compose (모니터링 스택 실행 시)### Installation
 
-### Installation
+#### Option 1: Gradle (Recommended)
 
-**1. 의존성 추가**
+**Step 1. GitHub Personal Access Token 생성**
+
+[GitHub Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens)에서 토큰 생성:
+- Scope 선택: `read:packages`
+
+**Step 2. gradle.properties 파일 생성**
+
+프로젝트 루트에 `gradle.properties` 파일 생성:
+```properties
+gpr.user=YOUR_GITHUB_USERNAME
+gpr.token=ghp_xxxxxxxxxxxxxxxxxxxx
+```
+
+**⚠️ 중요: .gitignore에 추가**
+```gitignore
+gradle.properties
+```
+
+**Step 3. build.gradle 설정**
+
 ```gradle
+repositories {
+    mavenCentral()
+
+    // GitHub Packages 저장소 추가
+    maven {
+        url = uri("https://maven.pkg.github.com/yukmekim/observability-starter")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.token") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
 dependencies {
-    implementation 'dev.observability:observability-spring-boot-starter:0.1.0'
+    implementation 'dev.observability:observability-starter:0.1.0'
 }
 ```
 
-**2. 애플리케이션 실행**
+**Step 4. 애플리케이션 실행**
 ```bash
+./gradlew clean build
 ./gradlew bootRun
 ```
 
-**3. 메트릭 확인**
+**Step 5. 메트릭 확인**
+```bash
+# Prometheus 메트릭
+curl http://localhost:8080/actuator/prometheus
+
+# Health Check
+curl http://localhost:8080/actuator/health
+
+# 모든 메트릭 목록
+curl http://localhost:8080/actuator/metrics
 ```
-Actuator: http://localhost:8080/actuator
-Prometheus Metrics: http://localhost:8080/actuator/prometheus
-Health Check: http://localhost:8080/actuator/health
+
+---
+
+#### Option 2: Maven
+
+**Step 1. settings.xml에 GitHub Packages 설정**
+
+`~/.m2/settings.xml`:
+```xml
+<settings>
+  <servers>
+    <server>
+      <id>github</id>
+      <username>YOUR_GITHUB_USERNAME</username>
+      <password>YOUR_GITHUB_TOKEN</password>
+    </server>
+  </servers>
+</settings>
+```
+
+**Step 2. pom.xml 설정**
+
+```xml
+<repositories>
+  <repository>
+    <id>github</id>
+    <url>https://maven.pkg.github.com/yukmekim/observability-starter</url>
+  </repository>
+</repositories>
+
+<dependencies>
+  <dependency>
+    <groupId>dev.observability</groupId>
+    <artifactId>observability-starter</artifactId>
+    <version>0.1.0</version>
+  </dependency>
+</dependencies>
 ```
 
 ## Features
@@ -131,27 +207,3 @@ observability-starter/
 
 **Build Tool**
 - Gradle 8.x
-
-## Usage in Other Projects
-
-### 1. Gradle 의존성 추가
-```gradle
-dependencies {
-    implementation 'dev.observability:observability-spring-boot-starter:0.1.0'
-}
-```
-
-### 2. 설정 커스터마이징 (선택사항)
-```yaml
-observability:
-  enabled: true
-  metrics:
-    common-tags:
-      application: reservation-rush
-      environment: production
-```
-
-### 3. 애플리케이션 실행 후 메트릭 확인
-```bash
-curl http://localhost:8080/actuator/prometheus
-```

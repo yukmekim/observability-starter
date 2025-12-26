@@ -2,11 +2,12 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.12'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'maven-publish'
 }
 
 group = 'dev.observability'
-version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+version = '0.1.0'
+description = 'Observability Starter for Github Packages'
 
 java {
 	toolchain {
@@ -22,6 +23,58 @@ configurations {
 
 repositories {
 	mavenCentral()
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from components.java
+
+			groupId = 'dev.observability'
+			artifactId = 'observability-starter'
+			version = '0.1.0'
+
+			versionMapping {
+				usage('java-api') {
+					fromResolutionOf('runtimeClasspath')
+				}
+				usage('java-runtime') {
+					fromResolutionResult()
+				}
+			}
+
+			pom {
+				name = 'Observability Spring Boot Starter'
+				description = 'A reusable Spring Boot Starter for production-ready observability with Prometheus and Grafana'
+				url = 'https://github.com/yukmekim/observability-starter'
+
+				licenses {
+					license {
+						name = 'MIT License'
+						url = 'https://opensource.org/licenses/MIT'
+					}
+				}
+
+				developers {
+					developer {
+						id = 'yukmekim'
+						name = 'YUK JANG HUN'
+						email = 'gyjj1243@gmail.com'
+					}
+				}
+			}
+		}
+	}
+	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/yukmekim/observability-starter")
+			credentials {
+				username = project.findProperty("gpr.user")
+				password = project.findProperty("gpr.token")
+			}
+		}
+	}
 }
 
 dependencies {
