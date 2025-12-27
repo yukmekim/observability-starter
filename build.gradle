@@ -81,6 +81,10 @@ dependencies {
 	// 모니터링 핵심 의존성 (추가)
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+    
+    // Logging & Loki
+    implementation 'com.github.loki4j:loki-logback-appender:1.6.0'
+    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
