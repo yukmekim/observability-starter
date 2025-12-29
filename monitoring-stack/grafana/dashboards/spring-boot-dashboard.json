@@ -61,7 +61,7 @@
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "system_cpu_usage",
+          "expr": "system_cpu_usage{application=~\"$application\"}",
           "refId": "A",
           "legendFormat": ""
         }
@@ -122,7 +122,7 @@
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) / sum(jvm_memory_max_bytes{area=\"heap\"})",
+          "expr": "sum(jvm_memory_used_bytes{area=\"heap\",application=~\"$application\"}) / sum(jvm_memory_max_bytes{area=\"heap\",application=~\"$application\"})",
           "refId": "A",
           "legendFormat": ""
         }
@@ -204,7 +204,7 @@
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "jvm_threads_live_threads",
+          "expr": "jvm_threads_live_threads{application=~\"$application\"}",
           "refId": "A",
           "legendFormat": "Live Threads"
         }
@@ -286,7 +286,7 @@
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "sum by(uri) (rate(http_server_requests_seconds_count[1m]))",
+          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{application=~\"$application\"}[1m]))",
           "refId": "A",
           "legendFormat": "{{uri}}"
         }
@@ -368,19 +368,19 @@
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "histogram_quantile(0.50, sum by(le, uri) (rate(http_server_requests_seconds_bucket[1m])))",
+          "expr": "histogram_quantile(0.50, sum by(le, uri) (rate(http_server_requests_seconds_bucket{application=~\"$application\"}[1m])))",
           "refId": "A",
           "legendFormat": "p50 - {{uri}}"
         },
         {
           "datasource": "Prometheus",
-          "expr": "histogram_quantile(0.95, sum by(le, uri) (rate(http_server_requests_seconds_bucket[1m])))",
+          "expr": "histogram_quantile(0.95, sum by(le, uri) (rate(http_server_requests_seconds_bucket{application=~\"$application\"}[1m])))",
           "refId": "B",
           "legendFormat": "p95 - {{uri}}"
         },
         {
           "datasource": "Prometheus",
-          "expr": "histogram_quantile(0.99, sum by(le, uri) (rate(http_server_requests_seconds_bucket[1m])))",
+          "expr": "histogram_quantile(0.99, sum by(le, uri) (rate(http_server_requests_seconds_bucket{application=~\"$application\"}[1m])))",
           "refId": "C",
           "legendFormat": "p99 - {{uri}}"
         }
@@ -509,19 +509,19 @@
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{status=~\"2..\"}[1m]))",
+          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{status=~\"2..\",application=~\"$application\"}[1m]))",
           "refId": "A",
           "legendFormat": "2xx - {{uri}}"
         },
         {
           "datasource": "Prometheus",
-          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{status=~\"4..\"}[1m]))",
+          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{status=~\"4..\",application=~\"$application\"}[1m]))",
           "refId": "B",
           "legendFormat": "4xx - {{uri}}"
         },
         {
           "datasource": "Prometheus",
-          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{status=~\"5..\"}[1m]))",
+          "expr": "sum by(uri) (rate(http_server_requests_seconds_count{status=~\"5..\",application=~\"$application\"}[1m]))",
           "refId": "C",
           "legendFormat": "5xx - {{uri}}"
         }
@@ -533,7 +533,19 @@
   "schemaVersion": 39,
   "tags": ["spring-boot", "simple"],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "name": "application",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(jvm_memory_used_bytes, application)",
+        "label": "Application",
+        "multi": false,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 1
+      }
+    ]
   },
   "time": {
     "from": "now-15m",
