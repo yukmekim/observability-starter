@@ -4,9 +4,24 @@ observability:
     common-tags:
       application: observability-starter
       environment: dev
+
+  exclude-patterns:
+    - /actuator/**
+    - /error
+    - /favicon.ico
+    # swagger patterns
+    - /swagger-ui/**
+    - /v3/api-docs/**
+
+  percentiles:
+    enabled: false
+    percentiles: [0.5, 0.9, 0.95, 0.99]
+
   logging:
     include-headers: true
     include-query-string: true
+    include-payload: false
+    max-payload-length: 1000
 
 # Actuator 기본 설정
 management:

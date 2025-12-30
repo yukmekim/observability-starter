@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'dev.observability'
-version = '0.2.2'
+version = '0.3.0'
 description = 'Observability Starter for Github Packages'
 
 java {
@@ -32,7 +32,7 @@ publishing {
 
 			groupId = 'dev.observability'
 			artifactId = 'observability-starter'
-			version = '0.2.2'
+			version = '0.3.0'
 
 			versionMapping {
 				usage('java-api') {

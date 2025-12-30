@@ -1,8 +1,11 @@
 package dev.observability.autoconfigure;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
@@ -33,7 +36,51 @@ public class MetricsConfiguration {
     }
 
     @Bean
+    public MeterFilter excludeUrlPatternFilter() {
+        List<String> patterns = properties.getMetrics().getExcludePatterns();
+
+        return MeterFilter.deny(id -> {
+            String uri = id.getTag("uri");
+            if (uri == null) {
+                return false;
+            }
+
+            return patterns.stream()
+                .anyMatch(pattern -> matchesPattern(uri, pattern));
+        });
+    }
+
+    private boolean matchesPattern(String uri, String pattern) {
+        String regex = pattern
+            .replace("**", "(\\/[^\\/]+)*");
+        return uri.matches(regex);
+    }
+
+    @Bean
     public MeterFilter meterFilter() {
         return MeterFilter.denyNameStartsWith("tomcat.");
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "observability.metrics.percentiles", name = "enabled", havingValue = "true")
+    public MeterFilter percentilesFilter() {
+        List<Double> percentiles = properties.getMetrics().getPercentiles().getPercentiles();
+        double[] percentileValues = percentiles.stream()
+            .mapToDouble(Double::doubleValue)
+            .toArray();
+
+        return new MeterFilter() {
+            @Override
+            public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+
+                if(id.getName().equals("http.server.requests")) {
+                    return DistributionStatisticConfig.builder()
+                        .percentiles(percentileValues)
+                        .build()
+                        .merge(config);
+                }
+                return config;
+            }
+        };
     }
 }
