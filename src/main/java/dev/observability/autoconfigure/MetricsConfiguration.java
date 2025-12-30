@@ -52,8 +52,10 @@ public class MetricsConfiguration {
 
     private boolean matchesPattern(String uri, String pattern) {
         String regex = pattern
-            .replace("**", "(\\/[^\\/]+)*");
-        return uri.matches(regex);
+            .replace("**", ".*")
+            .replace("*", "[^/]*")
+            .replace("/", "\\/");
+        return uri.matches("^" + regex + "$");
     }
 
     @Bean
