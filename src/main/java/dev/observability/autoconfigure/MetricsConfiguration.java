@@ -77,6 +77,7 @@ public class MetricsConfiguration {
 
                 if(id.getName().equals("http.server.requests")) {
                     return DistributionStatisticConfig.builder()
+                        .percentilesHistogram(true)
                         .percentiles(percentileValues)
                         .build()
                         .merge(config);
