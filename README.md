@@ -58,7 +58,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'dev.observability:observability-starter:0.1.0'
+    implementation 'dev.observability:observability-starter:0.3.9'
 }
 ```
 
@@ -113,12 +113,16 @@ curl http://localhost:8080/actuator/metrics
   <dependency>
     <groupId>dev.observability</groupId>
     <artifactId>observability-starter</artifactId>
-    <version>0.1.0</version>
+    <version>0.3.9</version>
   </dependency>
 </dependencies>
 ```
 
 ## Features
+
+### Key Features
+- **Effective Metric Filtering**: 불필요한 URL(Swagger, Actuator 등) 자동 필터링으로 메트릭 노이즈 제거
+- **Latency Distribution**: `percentiles-histogram` 자동 구성을 통해 정확한 응답 시간 분포(P95, P99) 및 히스토그램 제공
 
 ### Automatic Configuration
 
@@ -149,15 +153,24 @@ docker-compose up -d
 ```yaml
 # application.yml
 observability:
-  enabled: true  # 모니터링 활성화 (기본값: true)
+  enabled: true
+  
   metrics:
+    # 1. 공통 태그 설정 (모든 메트릭에 자동 부착)
     common-tags:
-      application: my-app
-      environment: production
-      team: backend
-  logging:
-    include-headers: true
-    include-query-string: true
+      application: reservation-rush
+      environment: dev
+    # 2. 불필요한 URL 메트릭 수집 제외 (Wildcard 지원)
+    exclude-patterns:
+      - /actuator/**
+      - /swagger-ui/**
+      - /v3/api-docs/**
+      - /favicon.ico
+    # 3. HTTP 응답 시간 분포(Histogram) 및 Percentile 수집 설정
+    # 주의: enabled: true로 설정해야 Grafana에서 히스토그램(Bucket) 및 P95, P99 등을 볼 수 있습니다.
+    percentiles:
+      enabled: true
+      percentiles: [0.5, 0.9, 0.95, 0.99]
 ```
 
 ### Actuator Endpoints
